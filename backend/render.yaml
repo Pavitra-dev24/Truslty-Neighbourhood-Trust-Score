@@ -1,0 +1,21 @@
+# Optional "Infrastructure as Code" file for Render.
+# You do NOT have to use this — the README walks through setting the
+# service up by hand in Render's dashboard, which is simpler for a first
+# deploy. If you'd rather use Render's "Blueprint" feature, point it at
+# this repo and it will read this file automatically.
+#
+# Python version: pinned via backend/.python-version (currently 3.12),
+# not here — Render reads that file automatically for Python services.
+
+services:
+  - type: web
+    name: neighbourhood-trust-score-api
+    runtime: python
+    plan: free
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: ALLOWED_ORIGINS
+        sync: false   # set to your Vercel URL once the frontend is deployed
