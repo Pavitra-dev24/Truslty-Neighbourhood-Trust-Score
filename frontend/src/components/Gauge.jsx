@@ -1,10 +1,16 @@
 import React from "react";
 
 /**
- * A hand-drawn-instrument-style semi-circular dial, styled after a
- * surveyor's measuring gauge rather than a glossy dashboard widget —
- * it's the one deliberately bold element on the page, everything else
- * stays quiet around it.
+ * A semi-circular dial reading the signal score — the page's one
+ * deliberately bold focal point, everything else stays quiet around it.
+ *
+ * Zone colors are mapped onto the documented brand palette rather than
+ * a conventional red/amber/green scale, since the design system doesn't
+ * define a separate semantic color set for this kind of surface:
+ *   Clean   -> primary indigo (the brand's own "good" signal)
+ *   Mixed   -> lemon (documented warm/sherbet accent)
+ *   Flagged -> ruby (documented accent, used here as the alert tone)
+ * The zone label carries the actual meaning; color is a secondary cue.
  *
  * score: 0-100 or null (no data)
  */
@@ -15,10 +21,10 @@ export default function Gauge({ score }) {
   const radius = 84;
 
   const zoneColor = (s) => {
-    if (s === null) return "#9aa39a";
-    if (s >= 80) return "#3f6650";
-    if (s >= 55) return "#b8862e";
-    return "#9c3b33";
+    if (s === null) return "#64748d"; // ink-mute
+    if (s >= 80) return "#533afd"; // primary (indigo)
+    if (s >= 55) return "#9b6829"; // lemon
+    return "#ea2261"; // ruby
   };
 
   const zoneLabel = (s) => {
@@ -53,7 +59,7 @@ export default function Gauge({ score }) {
         <path
           d={`M ${cx - radius} ${cy} A ${radius} ${radius} 0 0 1 ${cx + radius} ${cy}`}
           fill="none"
-          stroke="#d7dace"
+          stroke="#e3e8ee"
           strokeWidth="10"
           strokeLinecap="round"
         />
@@ -85,7 +91,7 @@ export default function Gauge({ score }) {
               y1={inner.y}
               x2={outer.x}
               y2={outer.y}
-              stroke="#96a094"
+              stroke="#a8c3de"
               strokeWidth="1.5"
             />
           );
@@ -97,29 +103,32 @@ export default function Gauge({ score }) {
           y1={cy}
           x2={needleX}
           y2={needleY}
-          stroke="#1b2a22"
+          stroke="#0d253d"
           strokeWidth="2.5"
           strokeLinecap="round"
         />
-        <circle cx={cx} cy={cy} r="5" fill="#1b2a22" />
+        <circle cx={cx} cy={cy} r="5" fill="#0d253d" />
 
-        {/* score readout */}
+        {/* score readout — tabular figures, per the brand's numeric-type rule */}
         <text
           x={cx}
           y={cy - 30}
           textAnchor="middle"
-          fontFamily="IBM Plex Mono, monospace"
-          fontSize="30"
-          fontWeight="600"
-          fill="#1b2a22"
+          fontFamily="Inter, sans-serif"
+          fontSize="32"
+          fontWeight="300"
+          letterSpacing="-0.6"
+          style={{ fontFeatureSettings: '"tnum"' }}
+          fill="#0d253d"
         >
           {score === null ? "—" : score}
         </text>
       </svg>
       <div
         style={{
-          fontFamily: "IBM Plex Mono, monospace",
+          fontFamily: "Inter, sans-serif",
           fontSize: "11px",
+          fontWeight: 400,
           letterSpacing: "0.08em",
           textTransform: "uppercase",
           color,
