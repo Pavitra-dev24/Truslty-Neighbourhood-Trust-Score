@@ -1,4 +1,4 @@
-# Neighbourhood Trust Score
+# Truslty - Neighbourhood Trust Score
 
 A second reading on a local business's reviews — computed from reviews
 **you paste in yourself**, shown alongside whatever star rating you
