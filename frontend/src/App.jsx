@@ -29,9 +29,9 @@ export default function App() {
         <GradientMesh />
         <div className="hero-content">
           <div className="pill-tag-soft">Review signal survey</div>
-          <h1>Neighbourhood Trust Score</h1>
+          <h1>Trustly — Neighbourhood Trust Score</h1>
           <p>
-            Paste in a business's reviews and get a second, transparent reading on them —
+            Paste in a business's reviews and get a second, transparent reading on them, 
             alongside whatever star rating you already see, not instead of it. Nothing is
             fetched automatically; everything below is what you typed in.
           </p>
