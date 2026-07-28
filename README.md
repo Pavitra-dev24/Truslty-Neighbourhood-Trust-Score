@@ -16,9 +16,13 @@ Live: https://neighbourhood-trust-score.vercel.app/
 - Zero external API dependency by design, so the project needs no third-party billing credentials to run.
 - Backend covered by an automated pytest suite, run on every push through GitHub Actions.
 
-## What it does
+## What this project does
 
 Enter a business name and a handful of reviews. The backend runs them through independent checks and returns a signal score plus a breakdown of what triggered it. It does not claim any review is fake, it surfaces signals for you to judge alongside the star rating you already see.
+
+## What it tries to solve
+
+A star rating alone hides a lot. A one-line review with no real detail counts the same as a detailed one, a burst of near-identical five-star reviews posted within hours of each other reads the same as five reviews earned naturally over a year, and a rating from a blank or placeholder account carries the same weight as one from a real name. Most platforms moderate reviews after publication, removing spam and fake accounts, but do not give the reviews that remain any kind of ranking or trust signal beyond the star count. This project targets that narrow, specific gap. It is a second reading on reviews that already made it through moderation, not a replacement for that moderation.
 
 ## How the scoring engine works
 
