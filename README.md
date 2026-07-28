@@ -135,11 +135,3 @@ cd backend
 pip install pytest --break-system-packages
 pytest tests/ -v
 ```
-
-## Possible extensions
-
-- Browser extension to pre-fill the form from a Maps page.
-- Persist past analyses instead of losing them on refresh.
-- Expand the sentiment lexicon.
-
-See `NOTES.md` for design notes.
