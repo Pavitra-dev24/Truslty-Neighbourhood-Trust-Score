@@ -4,6 +4,8 @@
 ![Python](https://img.shields.io/badge/python-3.12-3776AB?logo=python&logoColor=white)
 ![React](https://img.shields.io/badge/frontend-React-61DAFB?logo=react&logoColor=white)
 ![FastAPI](https://img.shields.io/badge/backend-FastAPI-009688?logo=fastapi&logoColor=white)
+![Backend on Render](https://img.shields.io/badge/Backend-Render-46E3B7?style=flat-square)
+![Frontend on Vercel](https://img.shields.io/badge/Frontend-Vercel-000000?style=flat-square&logo=vercel&logoColor=white)
 
 A tool that scores reviews for a local business using a set of explainable signals: generic text, rating and text mismatches, clustered posting dates, and anonymous reviewer names. Reviews are pasted in manually, nothing is fetched automatically, so there is no external API or billing account involved.
 
