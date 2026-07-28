@@ -1,6 +1,6 @@
 # Trustly — Neighbourhood Trust Score
 
-![Live](https://img.shields.io/website?url=https%3A%2F%2Fneighbourhood-trust-score.vercel.app&label=live)
+[![Live App](https://img.shields.io/badge/Live-App-2ea44f?style=for-the-badge)](https://neighbourhood-trust-score.vercel.app/)
 ![Python](https://img.shields.io/badge/python-3.12-3776AB?logo=python&logoColor=white)
 ![React](https://img.shields.io/badge/frontend-React-61DAFB?logo=react&logoColor=white)
 ![FastAPI](https://img.shields.io/badge/backend-FastAPI-009688?logo=fastapi&logoColor=white)
