@@ -1,4 +1,4 @@
-# Neighbourhood Trust Score
+# Trustly — Neighbourhood Trust Score
 
 ![Live](https://img.shields.io/website?url=https%3A%2F%2Fneighbourhood-trust-score.vercel.app&label=live)
 ![Python](https://img.shields.io/badge/python-3.12-3776AB?logo=python&logoColor=white)
