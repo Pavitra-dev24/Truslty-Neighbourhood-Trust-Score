@@ -50,9 +50,9 @@ export default function App() {
 
       <footer className="site-footer">
         <div className="site-footer-inner">
-          Solo, non-commercial demo project. Signal scores are heuristic and explainable, not
+          Signal scores are heuristic and explainable, not
           a claim that any individual review is fake. See{" "}
-          <a href="https://github.com" target="_blank" rel="noreferrer">
+          <a href="https://github.com/Pavitra-dev24/Truslty-Neighbourhood-Trust-Score" target="_blank" rel="noreferrer">
             the project README
           </a>{" "}
           for how the score is computed.
