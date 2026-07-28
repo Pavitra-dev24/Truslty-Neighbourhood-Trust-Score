@@ -1,11 +1,9 @@
 # Neighbourhood Trust Score
 
-![Tests](https://github.com/<your-username>/neighbourhood-trust-score/actions/workflows/tests.yml/badge.svg)
 ![Live](https://img.shields.io/website?url=https%3A%2F%2Fneighbourhood-trust-score.vercel.app&label=live)
 ![Python](https://img.shields.io/badge/python-3.12-3776AB?logo=python&logoColor=white)
 ![React](https://img.shields.io/badge/frontend-React-61DAFB?logo=react&logoColor=white)
 ![FastAPI](https://img.shields.io/badge/backend-FastAPI-009688?logo=fastapi&logoColor=white)
-![License](https://img.shields.io/badge/license-MIT-black)
 
 A tool that scores reviews for a local business using a set of explainable signals: generic text, rating and text mismatches, clustered posting dates, and anonymous reviewer names. Reviews are pasted in manually, nothing is fetched automatically, so there is no external API or billing account involved.
 
@@ -21,6 +19,31 @@ Live: https://neighbourhood-trust-score.vercel.app/
 ## What it does
 
 Enter a business name and a handful of reviews. The backend runs them through independent checks and returns a signal score plus a breakdown of what triggered it. It does not claim any review is fake, it surfaces signals for you to judge alongside the star rating you already see.
+
+## How the scoring engine works
+
+The engine runs four independent checks against each review. A check that fires adds a fixed penalty to that specific review. Penalties are averaged across the sample and converted into a single 0 to 100 score. Nothing here is machine learning, every number below is a fixed rule in `scoring.py`.
+
+### 1. Generic text
+A review is flagged if its text is under 12 characters, or if it matches one of a short list of template phrases ("good service", "nice place", "highly recommend", and similar) while still under 60 characters. Catches low-effort reviews that carry no specific information about the business. Penalty: 6.
+
+### 2. Rating and text mismatch
+A hand-built lexicon of about 30 positive words and 30 negative words is matched word-for-word against the review text. If the rating is 4 or 5 but negative words outnumber positive ones, or the rating is 1 or 2 but positive words outnumber negative ones, the review is flagged. Reviews with no lexicon matches on either side are left alone rather than guessed at, since there is not enough signal to call it either way. Penalty: 10.
+
+### 3. Clustered posting times
+Only runs on reviews that have a date attached, and only if at least 3 reviews in the sample have one. Dated reviews are sorted by timestamp. If the full dated sample spans less than 14 days, the check is skipped entirely, since clustering is not a meaningful outlier signal on a sample that is naturally all recent. Otherwise, any two reviews posted within 48 hours of each other are both flagged. Penalty: 8 per review involved.
+
+### 4. Anonymous reviewer
+A review is flagged if the reviewer name is left blank or matches a known placeholder, including Google's own default label "A Google User" for accounts with no name set. Penalty: 4.
+
+### Final score
+```
+raw_score = 100 - (total_penalty / review_count) * 2.1
+signal_score = clamp(round(raw_score), 0, 100)
+```
+A score of 80 or above reads as Clean, 55 to 79 as Mixed, below 55 as Flagged. Samples smaller than 3 reviews get a separate note that the sample is too small to be meaningful, regardless of what the score comes out to.
+
+The API returns which specific rule triggered on each review, not just the final number, so the frontend can show the reasoning next to the score rather than asking for trust in a black box.
 
 ## Architecture
 
@@ -106,31 +129,6 @@ cd backend
 pip install pytest --break-system-packages
 pytest tests/ -v
 ```
-
-## Deploy
-
-### Backend on Render
-- Root directory: `backend`
-- Runtime: Python 3
-- Build command: `pip install -r requirements.txt`
-- Start command: `uvicorn main:app --host 0.0.0.0 --port $PORT`
-- Environment variable: `ALLOWED_ORIGINS`
-- Python version is pinned in `backend/.python-version`
-
-### Frontend on Vercel
-- Root directory: `frontend`
-- Framework preset: Vite
-- Environment variable: `VITE_API_BASE_URL`, set to the Render backend URL
-
-### Connect them
-Set `ALLOWED_ORIGINS` on Render to the Vercel URL. Set `VITE_API_BASE_URL` on Vercel to the Render URL. Push to `main` to redeploy either side.
-
-## Limitations
-
-- Reviews are entered manually. There is no automatic lookup.
-- Every flag is a heuristic signal, not proof.
-- The sentiment lexicon is a small hand-built word list, not a trained model.
-- Render's free tier sleeps when idle, first request after that is slow.
 
 ## Possible extensions
 
