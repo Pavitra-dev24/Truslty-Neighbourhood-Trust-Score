@@ -1,239 +1,141 @@
-# Truslty - Neighbourhood Trust Score
+# Neighbourhood Trust Score
 
-A second reading on a local business's reviews — computed from reviews
-**you paste in yourself**, shown alongside whatever star rating you
-already see, not instead of it. Built as a solo, non-commercial portfolio
-project for the Google Software Application Development Apprenticeship
-(India, March 2027).
+![Tests](https://github.com/<your-username>/neighbourhood-trust-score/actions/workflows/tests.yml/badge.svg)
+![Live](https://img.shields.io/website?url=https%3A%2F%2Fneighbourhood-trust-score.vercel.app&label=live)
+![Python](https://img.shields.io/badge/python-3.12-3776AB?logo=python&logoColor=white)
+![React](https://img.shields.io/badge/frontend-React-61DAFB?logo=react&logoColor=white)
+![FastAPI](https://img.shields.io/badge/backend-FastAPI-009688?logo=fastapi&logoColor=white)
+![License](https://img.shields.io/badge/license-MIT-black)
 
-**Live demo:** add your deployed URLs here once live.
-- Frontend (Vercel): `https://your-app.vercel.app`
-- Backend (Render): `https://your-app.onrender.com`
+A tool that scores reviews for a local business using a set of explainable signals: generic text, rating and text mismatches, clustered posting dates, and anonymous reviewer names. Reviews are pasted in manually, nothing is fetched automatically, so there is no external API or billing account involved.
 
----
+Live: https://neighbourhood-trust-score.vercel.app/
 
-## What this is, and isn't
+## Highlights
 
-This is an **explainable review-signal tool**, not a fake-review
-detector. It surfaces a small set of transparent signals — clustered
-posting dates, star-rating vs. text mismatches, generic/templated text,
-anonymous reviewer names — computed from reviews you copy in yourself.
-It never claims a review is fake, and it always shows the rating you
-noted from wherever you found the reviews, alongside its own reading.
+- Decoupled frontend and backend, deployed and scaled independently on Vercel and Render.
+- Explainable scoring engine. Every flag traces back to a specific, documented rule, no black-box model.
+- Zero external API dependency by design, so the project needs no third-party billing credentials to run.
+- Backend covered by an automated pytest suite, run on every push through GitHub Actions.
 
-**Why paste-in, and not a live lookup:** the original design fetched
-reviews automatically from Google's Places API. That works, but Google
-requires a billing account — and a real payment method on file — before
-issuing any API key at all, even for usage that will always cost $0.
-Rather than ask anyone running this project to hand over card details
-for a demo app, the design was changed to need **no external API at
-all**: you copy reviews in from wherever you're reading them (Google
-Maps or anywhere else), and every calculation runs on this project's own
-backend. That's not a workaround — it's arguably a better fit for a
-solo, non-commercial tool, and being able to explain that trade-off is
-part of the point. See `NOTES.md` for the fuller story.
+## What it does
+
+Enter a business name and a handful of reviews. The backend runs them through independent checks and returns a signal score plus a breakdown of what triggered it. It does not claim any review is fake, it surfaces signals for you to judge alongside the star rating you already see.
 
 ## Architecture
 
 ```
-┌─────────────────┐         HTTPS          ┌──────────────────┐
-│  Frontend        │  ───────────────────▶  │  Backend          │
-│  React + Vite     │  ◀───────────────────  │  FastAPI (Python) │
-│  on Vercel         │      JSON             │  on Render         │
-└─────────────────┘                         └──────────────────┘
++--------------------+
+|      FRONTEND      |
+|    React + Vite    |
+|      (Vercel)      |
++--------------------+
+          |
+          |  HTTPS / JSON
+          v
++--------------------+
+|      BACKEND       |
+|  FastAPI (Python)  |
+|      (Render)      |
++--------------------+
 ```
 
-No external API, no API key, no billing account, anywhere in this
-stack. The backend's only job is running the scoring logic in
-`scoring.py` on whatever reviews the frontend sends it.
-
-- **Backend** (`/backend`) — a small FastAPI app with one endpoint
-  (`POST /api/analyze`) and the scoring logic in `scoring.py`.
-- **Frontend** (`/frontend`) — a React + Vite single-page app. A form
-  for entering business info and a handful of reviews, and a result view
-  with a hand-built SVG "trust dial" gauge (no charting library).
-
----
+Frontend: React 18, Vite, hand-built SVG components, no charting or UI library.
+Backend: FastAPI, Pydantic, pure Python heuristic scoring, no ML dependency.
 
 ## Repository structure
 
 ```
 neighbourhood-trust-score/
+├── .github/
+│   └── workflows/
+│       └── tests.yml        # CI, runs pytest on every push
 ├── backend/
-│   ├── main.py              # FastAPI app + the one POST /api/analyze route
-│   ├── scoring.py           # explainable review-signal scoring logic
+│   ├── main.py              # FastAPI app, POST /api/analyze
+│   ├── scoring.py           # scoring logic
 │   ├── requirements.txt
-│   ├── render.yaml          # optional Render blueprint
-│   ├── .python-version      # pins the Python version Render builds with
+│   ├── render.yaml
+│   ├── .python-version
 │   ├── .env.example
 │   └── tests/
-│       └── test_scoring.py  # unit tests, no network access needed
+│       └── test_scoring.py
 ├── frontend/
 │   ├── src/
 │   │   ├── App.jsx
 │   │   ├── api.js
 │   │   ├── styles.css
 │   │   └── components/
-│   │       ├── ReviewForm.jsx   # business info + review entry rows
+│   │       ├── ReviewForm.jsx
 │   │       ├── StarRating.jsx
 │   │       ├── TrustCard.jsx
-│   │       └── Gauge.jsx        # the signature SVG dial
+│   │       ├── Gauge.jsx
+│   │       └── GradientMesh.jsx
 │   ├── index.html
 │   ├── package.json
 │   ├── vite.config.js
 │   └── .env.example
-└── README.md                 # you are here
+├── LICENSE
+├── NOTES.md
+└── README.md
 ```
 
----
+## Local setup
 
-## 1. Run it locally first
-
-Get both sides working locally before touching Render or Vercel — it's
-much easier to debug a CORS issue on your own machine. No API key setup
-needed at any point.
-
-**Backend:**
+Backend:
 ```bash
 cd backend
-python3 -m venv .venv && source .venv/bin/activate   # optional but recommended
+python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
-cp .env.example .env   # the default ALLOWED_ORIGINS is already correct locally
+cp .env.example .env
 uvicorn main:app --reload
 ```
-Visit `http://127.0.0.1:8000/health` — you should see `{"status":"ok"}`.
+Runs at `http://127.0.0.1:8000`, health check at `/health`.
 
-**Frontend** (new terminal):
+Frontend (new terminal):
 ```bash
 cd frontend
 npm install
 cp .env.example .env
-# the default VITE_API_BASE_URL=http://127.0.0.1:8000 is already correct locally
 npm run dev
 ```
-Visit the URL Vite prints (usually `http://localhost:5173`), fill in a
-few reviews, and confirm you get a signal score back.
+Runs at `http://localhost:5173`.
 
-**Run the backend tests** (no network needed):
+Tests:
 ```bash
 cd backend
-pip install pytest --break-system-packages   # if not already installed
+pip install pytest --break-system-packages
 pytest tests/ -v
 ```
 
----
+## Deploy
 
-## 2. Push to GitHub
+### Backend on Render
+- Root directory: `backend`
+- Runtime: Python 3
+- Build command: `pip install -r requirements.txt`
+- Start command: `uvicorn main:app --host 0.0.0.0 --port $PORT`
+- Environment variable: `ALLOWED_ORIGINS`
+- Python version is pinned in `backend/.python-version`
 
-Both Render and Vercel deploy from a GitHub repo.
+### Frontend on Vercel
+- Root directory: `frontend`
+- Framework preset: Vite
+- Environment variable: `VITE_API_BASE_URL`, set to the Render backend URL
 
-```bash
-cd neighbourhood-trust-score
-git init
-git add .
-git commit -m "Initial commit: Neighbourhood Trust Score"
-```
-Create a new empty repo on GitHub, then:
-```bash
-git remote add origin https://github.com/<your-username>/neighbourhood-trust-score.git
-git branch -M main
-git push -u origin main
-```
+### Connect them
+Set `ALLOWED_ORIGINS` on Render to the Vercel URL. Set `VITE_API_BASE_URL` on Vercel to the Render URL. Push to `main` to redeploy either side.
 
----
+## Limitations
 
-## 3. Deploy the backend to Render
+- Reviews are entered manually. There is no automatic lookup.
+- Every flag is a heuristic signal, not proof.
+- The sentiment lexicon is a small hand-built word list, not a trained model.
+- Render's free tier sleeps when idle, first request after that is slow.
 
-1. Go to [render.com](https://render.com) and sign in (GitHub sign-in is easiest).
-2. **New → Web Service**, connect your GitHub account, and select this repo.
-3. Configure the service:
-   - **Root Directory:** `backend`
-   - **Runtime:** Python 3
-   - **Build Command:** `pip install -r requirements.txt`
-   - **Start Command:** `uvicorn main:app --host 0.0.0.0 --port $PORT`
-   - **Instance Type:** Free is fine for a demo project.
-4. Under **Environment**, add just one variable:
-   - `ALLOWED_ORIGINS` = `*` for now — you'll tighten this in Step 5, once the Vercel URL exists
-5. Click **Create Web Service**. Render will build and deploy; watch the logs for errors.
-6. Once live, note your backend URL — something like `https://neighbourhood-trust-score-api.onrender.com`.
-7. Confirm it works: visit `https://<your-render-url>/health` in a browser — you should see `{"status":"ok"}`.
+## Possible extensions
 
-*(There's also a `render.yaml` in `/backend` if you'd rather use Render's "Blueprint" one-click setup instead of the manual steps above — either works.)*
+- Browser extension to pre-fill the form from a Maps page.
+- Persist past analyses instead of losing them on refresh.
+- Expand the sentiment lexicon.
 
-**Python version note:** `backend/.python-version` pins the build to Python 3.12 — the version this project was actually tested against. Render changed the default Python version for newly-created services to 3.14.3 in February 2026, and the pinned package versions in `requirements.txt` predate that release, so leaving the version unpinned risks a build failure on a fresh service. If you ever want to move to a newer Python version, update this file and re-test locally first.
-
-**Free-tier note:** Render's free web services spin down after a period
-of inactivity and take 30–60 seconds to wake up on the next request.
-That's expected — the first request after idle time will just be slow,
-not broken.
-
----
-
-## 4. Deploy the frontend to Vercel
-
-1. Go to [vercel.com](https://vercel.com) and sign in (GitHub sign-in is easiest).
-2. **Add New → Project**, and import the same GitHub repo.
-3. Configure the project:
-   - **Root Directory:** `frontend`
-   - **Framework Preset:** Vite (Vercel should auto-detect this)
-   - **Build Command:** `npm run build` (default)
-   - **Output Directory:** `dist` (default for Vite)
-4. Under **Environment Variables**, add:
-   - `VITE_API_BASE_URL` = your Render URL from Step 3 (e.g. `https://neighbourhood-trust-score-api.onrender.com`) — **no trailing slash**
-5. Click **Deploy**. Vercel will build and give you a URL like `https://neighbourhood-trust-score.vercel.app`.
-
----
-
-## 5. Connect them properly
-
-At this point the frontend can technically reach the backend, but the
-backend's CORS is still wide open (`ALLOWED_ORIGINS=*`). Lock it down to
-your actual frontend:
-
-1. Back in **Render**, open your backend service → **Environment**.
-2. Change `ALLOWED_ORIGINS` from `*` to your real Vercel URL, e.g.:
-   ```
-   ALLOWED_ORIGINS=https://neighbourhood-trust-score.vercel.app
-   ```
-   (Comma-separate multiple origins if you also want to allow `http://localhost:5173` for continued local testing.)
-3. Save — Render will automatically redeploy the backend with the new setting.
-4. Open your live Vercel URL, enter a few reviews, and confirm the full flow works end to end: form → analysis → gauge + breakdown.
-
-If something doesn't connect, check your browser's DevTools **Network**
-and **Console** tabs first — a CORS error there means step 5.2 above
-hasn't finished redeploying yet, or the URL has a typo (http vs https,
-trailing slash, etc).
-
----
-
-## 6. Keeping both sides in sync going forward
-
-Whenever you push a change to `main` on GitHub, both Render and Vercel
-will automatically rebuild and redeploy — no extra steps needed after
-the initial setup above.
-
----
-
-## Limitations (worth being upfront about, including in an interview)
-
-- **Manual entry only.** There is no automatic lookup — every review has
-  to be copied in by hand. That's a deliberate trade-off (see `NOTES.md`),
-  not an oversight.
-- **Heuristic, not proof.** Every flag (generic text, timing cluster,
-  sentiment mismatch, anonymous reviewer) is a weak, independent signal,
-  not a verdict. The UI is worded to reflect that.
-- **Small hand-built sentiment lexicon.** `scoring.py`'s word list is
-  intentionally simple and inspectable, not a trained model — it will
-  miss nuance a real NLP model would catch.
-- **Free-tier hosting.** Render's free tier sleeps when idle; this is a
-  demo/portfolio deployment, not a production SLA.
-
-## Possible next steps
-
-- A small browser bookmarklet or extension that pre-fills the form from
-  a Google Maps page's visible reviews, to cut down on manual retyping
-  without ever calling a paid API.
-- Add a small SQLite layer to save and revisit past analyses rather than
-  losing them on refresh.
-- Extend or swap the sentiment lexicon if it proves too coarse on real
-  reviews you test it against.
+See `NOTES.md` for design notes.
